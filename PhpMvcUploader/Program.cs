@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PhpMvcUploader
 {
@@ -10,6 +6,11 @@ namespace PhpMvcUploader
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("Called with the following args.");
+            foreach (var arg in args)
+            {
+                Console.WriteLine(arg);
+            }
         }
     }
 }

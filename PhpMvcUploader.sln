@@ -5,6 +5,18 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhpMvcUploader", "PhpMvcUploader\PhpMvcUploader.csproj", "{B152F916-85C6-4D0C-9B81-2D494594A80D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhpMvcUploader.Core", "PhpMvcUploader.Core\PhpMvcUploader.Core.csproj", "{9DABCE21-1C9D-4836-AC19-AE4A52E0EB4C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{82BD325B-41A3-4195-8D0D-465FBB856207}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhpMvcUploader.Core.Test", "PhpMvcUploader.Core.Test\PhpMvcUploader.Core.Test.csproj", "{A0A7AD5A-26A2-4BBB-A94B-C280F71268BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhpMvcUploader.Common", "PhpMvcUploader.Common\PhpMvcUploader.Common.csproj", "{3743EB06-95A0-47C2-A4DD-A04B6D243D16}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhpMvcUploader.Common.Test", "PhpMvcUploader.Common.Test\PhpMvcUploader.Common.Test.csproj", "{B766118C-124A-4EC6-8AD6-C3FA7F564BE0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PhpMvcUploader.Test.Helpers", "PhpMvcUploader.Test.Helpers\PhpMvcUploader.Test.Helpers.csproj", "{A74573F9-2F68-4EF6-ADC6-831573C7DFB1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,8 +27,33 @@ Global
 		{B152F916-85C6-4D0C-9B81-2D494594A80D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B152F916-85C6-4D0C-9B81-2D494594A80D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B152F916-85C6-4D0C-9B81-2D494594A80D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9DABCE21-1C9D-4836-AC19-AE4A52E0EB4C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9DABCE21-1C9D-4836-AC19-AE4A52E0EB4C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9DABCE21-1C9D-4836-AC19-AE4A52E0EB4C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9DABCE21-1C9D-4836-AC19-AE4A52E0EB4C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0A7AD5A-26A2-4BBB-A94B-C280F71268BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0A7AD5A-26A2-4BBB-A94B-C280F71268BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0A7AD5A-26A2-4BBB-A94B-C280F71268BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0A7AD5A-26A2-4BBB-A94B-C280F71268BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3743EB06-95A0-47C2-A4DD-A04B6D243D16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3743EB06-95A0-47C2-A4DD-A04B6D243D16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3743EB06-95A0-47C2-A4DD-A04B6D243D16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3743EB06-95A0-47C2-A4DD-A04B6D243D16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B766118C-124A-4EC6-8AD6-C3FA7F564BE0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B766118C-124A-4EC6-8AD6-C3FA7F564BE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B766118C-124A-4EC6-8AD6-C3FA7F564BE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B766118C-124A-4EC6-8AD6-C3FA7F564BE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A74573F9-2F68-4EF6-ADC6-831573C7DFB1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A74573F9-2F68-4EF6-ADC6-831573C7DFB1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A74573F9-2F68-4EF6-ADC6-831573C7DFB1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A74573F9-2F68-4EF6-ADC6-831573C7DFB1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A0A7AD5A-26A2-4BBB-A94B-C280F71268BF} = {82BD325B-41A3-4195-8D0D-465FBB856207}
+		{B766118C-124A-4EC6-8AD6-C3FA7F564BE0} = {82BD325B-41A3-4195-8D0D-465FBB856207}
+		{A74573F9-2F68-4EF6-ADC6-831573C7DFB1} = {82BD325B-41A3-4195-8D0D-465FBB856207}
 	EndGlobalSection
 EndGlobal
