@@ -43,7 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CollectionExtensionsTest.cs" />
-    <Compile Include="RobustificationExtentionTest.cs" />
+    <Compile Include="RobustificationExtensionTest.cs" />
     <Compile Include="StringExtensionsTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
