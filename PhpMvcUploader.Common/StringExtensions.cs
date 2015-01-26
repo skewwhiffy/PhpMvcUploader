@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 namespace PhpMvcUploader.Common
 {
@@ -17,6 +18,20 @@ namespace PhpMvcUploader.Common
         public static bool IsNullOrEmpty(this string source)
         {
             return string.IsNullOrEmpty(source);
+        }
+
+        public static bool IsNullOrWhiteSpace(this string source)
+        {
+            return string.IsNullOrWhiteSpace(source);
+        }
+
+        public static byte[] GetBytes(this string source, Encoding encoding = null)
+        {
+            if (encoding == null)
+            {
+                encoding = Encoding.Unicode;
+            }
+            return encoding.GetBytes(source);
         }
     }
 }

@@ -22,15 +22,74 @@ namespace PhpMvcUploader.Core.Ftp
 
         public IEnumerable<string> ListFilesRecursive(string folder = "")
         {
-            var infos = GetResponse(WebRequestMethods.Ftp.ListDirectoryDetails, GetUri(folder));
+            var infos = GetTextResponse(WebRequestMethods.Ftp.ListDirectoryDetails, GetUri(folder));
             var folders = infos.Where(IsFolder).Select(f => GetName(f, folder));
             var files = infos.Where(i => !IsFolder(i)).Select(f => GetName(f, folder));
             return files.Union(folders.SelectMany(ListFilesRecursive));
         }
 
+        public IEnumerable<string> ListFoldersRecursive(string folder = "")
+        {
+            var infos = GetTextResponse(WebRequestMethods.Ftp.ListDirectoryDetails, GetUri(folder));
+            var folders = infos.Where(IsFolder).Select(f => GetName(f, folder)).ToList();
+            return folders.Union(folders.SelectMany(ListFoldersRecursive));
+        } 
+
         public void DeleteFile(string filePath)
         {
-            GetResponse(WebRequestMethods.Ftp.DeleteFile, GetUri(filePath));
+            GetTextResponse(WebRequestMethods.Ftp.DeleteFile, GetUri(filePath));
+        }
+
+        public void Download(string serverPath, string localPath)
+        {
+            const string method = WebRequestMethods.Ftp.DownloadFile;
+            var uri = GetUri(serverPath);
+            var request = CreateRequest(uri, method);
+
+            using (var stream = File.Create(localPath))
+            using (var response = GetResponse(request))
+            using (var inStream = response.GetResponseStream())
+            {
+                ProxyBytes(inStream, stream);
+            }
+        }
+
+        public void DownloadAll(string localPath)
+        {
+            ListFoldersRecursive()
+                .OrderBy(p => p)
+                .Select(p => p.Trim('/', '\\'))
+                .Select(p => Path.Combine(localPath, p))
+                .ForEach(p => Directory.CreateDirectory(p));
+            ListFilesRecursive()
+                .OrderBy(p => p)
+                .Select(p => p.Trim('/', '\\'))
+                .ForEach(p => Download(p, Path.Combine(localPath, p)));
+        }
+
+        private void ProxyBytes(Stream responseStream, Stream targetStream)
+        {
+            responseStream.NullGuard();
+            var buffer = new byte[2048];
+            int bytesRead;
+            while ((bytesRead = responseStream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                targetStream.Write(buffer, 0, bytesRead);
+            }
+        }
+
+        private IList<string> ReadTextResponse(Stream responseStream)
+        {
+            responseStream.NullGuard();
+            var response = new List<string>();
+            using (var reader = GetReader(responseStream))
+            {
+                while (!reader.EndOfStream)
+                {
+                    response.Add(reader.ReadLine());
+                }
+            }
+            return response;
         }
 
         private Uri GetUri(string path)
@@ -53,7 +112,7 @@ namespace PhpMvcUploader.Core.Ftp
             return folderInfo.StartsWith("d");
         }
 
-        private IList<string> GetResponse(string method, Uri url = null)
+        private IList<string> GetTextResponse(string method, Uri url = null)
         {
             if (url == null)
             {
@@ -64,7 +123,7 @@ namespace PhpMvcUploader.Core.Ftp
             using (var response = GetResponse(request))
             using (var responseStream = response.GetResponseStream())
             {
-                return ReadResponse(responseStream);
+                return ReadTextResponse(responseStream);
             }
         }
 
@@ -85,23 +144,6 @@ namespace PhpMvcUploader.Core.Ftp
                 request.Credentials = new NetworkCredential(Username, Password);
             }
             return request;
-        }
-
-        private IList<string> ReadResponse(Stream responseStream)
-        {
-            if (responseStream == null)
-            {
-                throw new IOException("Got null response");
-            }
-            var response = new List<string>();
-            using (var reader = GetReader(responseStream))
-            {
-                while (!reader.EndOfStream)
-                {
-                    response.Add(reader.ReadLine());
-                }
-            }
-            return response;
         }
 
         private StreamReader GetReader(Stream responseStream)

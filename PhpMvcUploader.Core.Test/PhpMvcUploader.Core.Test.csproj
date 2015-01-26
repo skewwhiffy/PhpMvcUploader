@@ -42,6 +42,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ftp\FileComparerTest.cs" />
     <Compile Include="TestConfig\AppConfig.cs" />
     <Compile Include="Execute\ExecuteTest.cs" />
     <Compile Include="Ftp\FtpClientTest.cs" />

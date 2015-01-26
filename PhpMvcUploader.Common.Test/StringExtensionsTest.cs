@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 using NUnit.Framework;
 
 namespace PhpMvcUploader.Common.Test
@@ -61,6 +62,34 @@ namespace PhpMvcUploader.Common.Test
         public void IsNullOrEmptyWorks()
         {
             Assert.That("hello".IsNullOrEmpty(), Is.False);
+        }
+
+        [Test]
+        public void IsNullOrWhiteSpaceWorksForNull()
+        {
+            Assert.That((null as string).IsNullOrWhiteSpace());
+        }
+
+        [Test]
+        public void IsNullOrWhiteSpaceWorksForEmpty()
+        {
+            Assert.That(string.Empty.IsNullOrWhiteSpace());
+        }
+
+        [Test]
+        public void IsNullOrWhiteSpaceWorksForWhiteSpace()
+        {
+            Assert.That("    ".IsNullOrWhiteSpace());
+        }
+
+        [Test]
+        public void GetBytesWorks()
+        {
+            const string source = "hello";
+
+            var encoded = source.GetBytes();
+
+            Assert.That(Encoding.Unicode.GetString(encoded), Is.EqualTo(source));
         }
     }
 }

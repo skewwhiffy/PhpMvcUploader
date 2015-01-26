@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
-using System.Threading;
 using NUnit.Framework;
 using PhpMvcUploader.Common;
 using PhpMvcUploader.Core.Ftp;
@@ -15,6 +13,9 @@ namespace PhpMvcUploader.Core.Test.Ftp
     [TestFixture]
     public class FtpClientTest
     {
+        private const int IoRetry = 15;
+        private static readonly TimeSpan IoRetryInterval = TimeSpan.FromMilliseconds(100);
+
         private bool _doRun;
         private string _localDirectory;
         private string _username;
@@ -29,13 +30,17 @@ namespace PhpMvcUploader.Core.Test.Ftp
         private FtpClient _client;
         private List<string> _files;
         private List<string> _folders;
+        private string _workspace;
 
         [TestFixtureSetUp]
         public void BeforeAll()
         {
             var config = new AppConfig();
             _doRun = config.RunFtpTests;
-            if (!_doRun) return;
+            if (!_doRun)
+            {
+                return;
+            }
 
             _localDirectory = config.FtpLocalPath;
             _username = config.FtpUsername;
@@ -51,19 +56,65 @@ namespace PhpMvcUploader.Core.Test.Ftp
             SetUpLocalFiles();
         }
 
+        [TestFixtureTearDown]
+        public void AfterAll()
+        {
+            DeleteLocalFiles();
+            DeleteWorkspace();
+        }
+
         private void SetUpLocalFiles()
         {
-            foreach(var d in Directory.EnumerateDirectories(_localDirectory))
-            {
-                Directory.Delete(d, true);
-            }
-            foreach (var f in Directory.EnumerateFiles(_localDirectory))
-            {
-                File.Delete(f);
-            }
+            DeleteLocalFiles();
             _files = new List<string>();
             _folders = new List<string>();
             MakeFolderTree();
+            SetupWorkspace();
+        }
+
+        private void DeleteLocalFiles()
+        {
+            if (_localDirectory.IsNullOrEmpty() || !Directory.Exists(_localDirectory))
+            {
+                return;
+            }
+            foreach (var d in Directory.EnumerateDirectories(_localDirectory))
+            {
+                DeleteFolder(d);
+            }
+            foreach (var f in Directory.EnumerateFiles(_localDirectory))
+            {
+                var file = f;
+                IoRetry.TimesEvery(IoRetryInterval).Try(() => File.Delete(file));
+            }
+        }
+
+        private void SetupWorkspace()
+        {
+            _workspace = Path.Combine(Environment.CurrentDirectory, "workspace");
+            DeleteWorkspace();
+            Directory.CreateDirectory(_workspace);
+        }
+
+        private void DeleteWorkspace()
+        {
+            if (_workspace.IsNullOrEmpty() || !Directory.Exists(_workspace))
+            {
+                return;
+            }
+            DeleteFolder(_workspace);
+        }
+
+        private void DeleteFolder(string folder)
+        {
+            try
+            {
+                IoRetry.TimesEvery(IoRetryInterval).Try(() => Directory.Delete(folder, true));
+            }
+            catch
+            {
+                // Do nothing: this just leaves a few files behind.
+            }
         }
 
         private void MakeFolderTree(string start = null, int depth = MaxFolderDepth)
@@ -76,10 +127,16 @@ namespace PhpMvcUploader.Core.Test.Ftp
             for (var i = 0; i < numberOfFiles; i++)
             {
                 var newFileName = _generator.GetUniqueString();
-                var newFilePath = Path.Combine(start, newFileName);
+                var newFilePath = Path.Combine(start, "{0}.txt".FormatX(newFileName));
+                var newFileContents = "This is file {0}{1}"
+                    .FormatX(newFilePath, Environment.NewLine)
+                    .GetBytes();
                 _files.Add(newFilePath);
-                var stream = File.Create(newFilePath);
-                stream.Close();
+                using (var stream = File.Create(newFilePath))
+                {
+                    stream.Write(newFileContents, 0, newFileContents.Length);
+                    stream.Close();
+                }
             }
             if (depth == 0)
             {
@@ -108,8 +165,21 @@ namespace PhpMvcUploader.Core.Test.Ftp
         }
 
         [Test]
+        public void ListFoldersRecursiveWorks()
+        {
+            if (!_doRun) return;
+            var expected = Directory
+                .EnumerateDirectories(_localDirectory, "*", SearchOption.AllDirectories);
+
+            var list = _client.ListFoldersRecursive();
+
+            AssertEquivalent(list, expected);
+        }
+
+        [Test]
         public void DeleteFileWorks()
         {
+            if (!_doRun) return;
             var fileToDelete = _generator.RandomElement(_files);
             var relativeFilePath = StripLocalDirectory(fileToDelete);
             Console.WriteLine(relativeFilePath);
@@ -119,6 +189,41 @@ namespace PhpMvcUploader.Core.Test.Ftp
             Assert.That(File.Exists(fileToDelete), Is.False);
         }
 
+        [Test]
+        public void DownloadFileWorks()
+        {
+            if (!_doRun) return;
+            var target = Path.Combine(_workspace, "blah.txt");
+            var source = _files.Random();
+            var sourceRelativePath = StripLocalDirectory(source);
+            var sourceContents = File.OpenText(source).ReadToEnd();
+
+            _client.Download(sourceRelativePath, target);
+
+            Assert.That(File.Exists(target));
+            var downloadedContents = File.OpenText(target).ReadToEnd();
+            Assert.That(downloadedContents, Is.EqualTo(sourceContents));
+        }
+
+        [Test]
+        public void DownloadAllWorks()
+        {
+            if (!_doRun) return;
+            var target = Path.Combine(_workspace, "temp");
+            Directory.CreateDirectory(target);
+            var targetFilesExpected = _files
+                .Select(GetRelativePath)
+                .Select(p => Path.Combine(target, p));
+            var targetFoldersExpected = _folders
+                .Select(GetRelativePath)
+                .Select(p => Path.Combine(target, p));
+
+            _client.DownloadAll(target);
+
+            targetFilesExpected.ForEach(f => Assert.That(File.Exists(f), f));
+            targetFoldersExpected.ForEach(f => Assert.That(Directory.Exists(f), f));
+        }
+
         private void AssertEquivalent(IEnumerable<string> actual, IEnumerable<string> expected)
         {
             var sanitized = expected.Select(StripLocalDirectory);
@@ -126,13 +231,17 @@ namespace PhpMvcUploader.Core.Test.Ftp
             Assert.That(actual, Is.EquivalentTo(sanitized));
         }
 
-        private string StripLocalDirectory(string actual)
+        private string GetRelativePath(string actual)
         {
             var stripped = actual.StartsWith(_localDirectory)
                 ? actual.Substring(_localDirectory.Length)
                 : actual;
-            var forwardSlashes = stripped.Replace('\\', '/').Trim('/');
-            return "/{0}".FormatX(forwardSlashes);
+            return stripped.Replace('\\', '/').Trim('/');
+        }
+
+        private string StripLocalDirectory(string actual)
+        {
+            return "/{0}".FormatX(GetRelativePath(actual));
         }
     }
 }

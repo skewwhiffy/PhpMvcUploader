@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using PhpMvcUploader.Common;
 
@@ -30,6 +29,18 @@ namespace PhpMvcUploader.Test.Helpers.TestData
         public int RandomIntInclusive(int min, int max)
         {
             return Random.Next(min, max + 1);
+        }
+
+        public int RandomIntExclusive(int upperBound)
+        {
+            return RandomIntInclusive(upperBound - 1);
+        }
+
+        public byte[] RandomByteArray(int size)
+        {
+            var result = new byte[size];
+            Random.NextBytes(result);
+            return result;
         }
 
         private string AdvanceUniqueString(string current)
