@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using PhpMvcUploader.Common;
 
-namespace PhpMvcUploader.Core.Ftp
+namespace PhpMvcUploader.Core.Comparison
 {
     public class FileComparer
     {

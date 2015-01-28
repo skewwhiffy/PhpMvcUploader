@@ -39,9 +39,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Comparison\FolderComparer.cs" />
     <Compile Include="Execute\Executable.cs" />
     <Compile Include="Execute\ExecutableException.cs" />
-    <Compile Include="Ftp\FileComparer.cs" />
+    <Compile Include="Comparison\FileComparer.cs" />
     <Compile Include="Ftp\FtpClient.cs" />
     <Compile Include="Settings\IConfig.cs" />
     <Compile Include="Settings\Config.cs" />

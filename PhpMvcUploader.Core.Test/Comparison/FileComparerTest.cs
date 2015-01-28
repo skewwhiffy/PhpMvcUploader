@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using PhpMvcUploader.Common;
-using PhpMvcUploader.Core.Ftp;
+using PhpMvcUploader.Core.Comparison;
 using PhpMvcUploader.Test.Helpers.TestData;
 
-namespace PhpMvcUploader.Core.Test.Ftp
+namespace PhpMvcUploader.Core.Test.Comparison
 {
     [TestFixture]
     public class FileComparerTest

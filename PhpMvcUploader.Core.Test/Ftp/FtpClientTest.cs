@@ -13,19 +13,13 @@ namespace PhpMvcUploader.Core.Test.Ftp
     [TestFixture]
     public class FtpClientTest
     {
-        private const int IoRetry = 15;
-        private static readonly TimeSpan IoRetryInterval = TimeSpan.FromMilliseconds(100);
-
         private bool _doRun;
         private string _localDirectory;
         private string _username;
         private string _password;
         private string _url;
         private Generator _generator;
-
-        private const int MaxFolderDepth = 5;
-        private const int MaxFilesPerFolder = 4;
-        private const int MaxFoldersPerFolder = 3;
+        private FileMaker _fileMaker;
 
         private FtpClient _client;
         private List<string> _files;
@@ -48,11 +42,14 @@ namespace PhpMvcUploader.Core.Test.Ftp
             _url = config.FtpUrl;
 
             _generator = new Generator();
+            _fileMaker = new FileMaker();
+
             _client = new FtpClient(_url)
             {
                 Username = _username,
                 Password = _password
             };
+
             SetUpLocalFiles();
         }
 
@@ -66,9 +63,9 @@ namespace PhpMvcUploader.Core.Test.Ftp
         private void SetUpLocalFiles()
         {
             DeleteLocalFiles();
-            _files = new List<string>();
-            _folders = new List<string>();
-            MakeFolderTree();
+            _fileMaker.MakeFolderTree(_localDirectory);
+            _files = _fileMaker.Files;
+            _folders = _fileMaker.Folders;
             SetupWorkspace();
         }
 
@@ -80,12 +77,11 @@ namespace PhpMvcUploader.Core.Test.Ftp
             }
             foreach (var d in Directory.EnumerateDirectories(_localDirectory))
             {
-                DeleteFolder(d);
+                _fileMaker.DeleteFolder(d);
             }
             foreach (var f in Directory.EnumerateFiles(_localDirectory))
             {
-                var file = f;
-                IoRetry.TimesEvery(IoRetryInterval).Try(() => File.Delete(file));
+                _fileMaker.DeleteFile(f);
             }
         }
 
@@ -102,54 +98,7 @@ namespace PhpMvcUploader.Core.Test.Ftp
             {
                 return;
             }
-            DeleteFolder(_workspace);
-        }
-
-        private void DeleteFolder(string folder)
-        {
-            try
-            {
-                IoRetry.TimesEvery(IoRetryInterval).Try(() => Directory.Delete(folder, true));
-            }
-            catch
-            {
-                // Do nothing: this just leaves a few files behind.
-            }
-        }
-
-        private void MakeFolderTree(string start = null, int depth = MaxFolderDepth)
-        {
-            if (start == null)
-            {
-                start = _localDirectory;
-            }
-            var numberOfFiles = _generator.RandomIntInclusive(1, MaxFilesPerFolder);
-            for (var i = 0; i < numberOfFiles; i++)
-            {
-                var newFileName = _generator.GetUniqueString();
-                var newFilePath = Path.Combine(start, "{0}.txt".FormatX(newFileName));
-                var newFileContents = "This is file {0}{1}"
-                    .FormatX(newFilePath, Environment.NewLine)
-                    .GetBytes();
-                _files.Add(newFilePath);
-                using (var stream = File.Create(newFilePath))
-                {
-                    stream.Write(newFileContents, 0, newFileContents.Length);
-                    stream.Close();
-                }
-            }
-            if (depth == 0)
-            {
-                return;
-            }
-            var numberOfFolders = _generator.RandomIntInclusive(1, MaxFoldersPerFolder);
-            for (var i = 0; i < numberOfFolders; i++)
-            {
-                var newFolder = Path.Combine(start, _generator.GetUniqueString());
-                _folders.Add(newFolder);
-                Directory.CreateDirectory(newFolder);
-                MakeFolderTree(newFolder, depth - 1);
-            }
+            _fileMaker.DeleteFolder(_workspace);
         }
 
         [Test]
@@ -182,7 +131,6 @@ namespace PhpMvcUploader.Core.Test.Ftp
             if (!_doRun) return;
             var fileToDelete = _generator.RandomElement(_files);
             var relativeFilePath = StripLocalDirectory(fileToDelete);
-            Console.WriteLine(relativeFilePath);
 
             _client.DeleteFile(relativeFilePath);
 

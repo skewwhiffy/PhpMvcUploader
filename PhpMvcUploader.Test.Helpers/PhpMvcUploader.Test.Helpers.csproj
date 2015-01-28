@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="Config\AppConfigReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestData\FileMaker.cs" />
     <Compile Include="TestData\Generator.cs" />
   </ItemGroup>
   <ItemGroup>
