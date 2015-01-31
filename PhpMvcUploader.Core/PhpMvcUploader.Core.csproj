@@ -39,11 +39,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Comparison\FileComparer.cs" />
     <Compile Include="Comparison\FolderComparer.cs" />
+    <Compile Include="Comparison\IStreamComparer.cs" />
     <Compile Include="Execute\Executable.cs" />
     <Compile Include="Execute\ExecutableException.cs" />
-    <Compile Include="Comparison\FileComparer.cs" />
+    <Compile Include="Comparison\StreamComparer.cs" />
     <Compile Include="Ftp\FtpClient.cs" />
+    <Compile Include="Io\FileSystemFactory.cs" />
+    <Compile Include="Io\IFileSystem.cs" />
+    <Compile Include="Io\FileSystem.cs" />
+    <Compile Include="Io\IFileSystemFactory.cs" />
     <Compile Include="Settings\IConfig.cs" />
     <Compile Include="Settings\Config.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

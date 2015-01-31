@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FakeItEasy">
+      <HintPath>..\packages\FakeItEasy.1.25.2\lib\net40\FakeItEasy.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.6.4\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -42,8 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Comparison\FolderComparerTest.cs" />
     <Compile Include="Comparison\FileComparerTest.cs" />
+    <Compile Include="Comparison\FolderComparerTest.cs" />
+    <Compile Include="Comparison\StreamComparerTest.cs" />
+    <Compile Include="Io\FileSystemTest.cs" />
     <Compile Include="TestConfig\AppConfig.cs" />
     <Compile Include="Execute\ExecuteTest.cs" />
     <Compile Include="Ftp\FtpClientTest.cs" />

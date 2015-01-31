@@ -26,7 +26,7 @@ namespace PhpMvcUploader.Core.Test.Ftp
         private List<string> _folders;
         private string _workspace;
 
-        [TestFixtureSetUp]
+        [SetUp]
         public void BeforeAll()
         {
             var config = new AppConfig();
@@ -42,7 +42,6 @@ namespace PhpMvcUploader.Core.Test.Ftp
             _url = config.FtpUrl;
 
             _generator = new Generator();
-            _fileMaker = new FileMaker();
 
             _client = new FtpClient(_url)
             {
@@ -53,7 +52,7 @@ namespace PhpMvcUploader.Core.Test.Ftp
             SetUpLocalFiles();
         }
 
-        [TestFixtureTearDown]
+        [TearDown]
         public void AfterAll()
         {
             DeleteLocalFiles();
@@ -63,7 +62,7 @@ namespace PhpMvcUploader.Core.Test.Ftp
         private void SetUpLocalFiles()
         {
             DeleteLocalFiles();
-            _fileMaker.MakeFolderTree(_localDirectory);
+            _fileMaker = FileMaker.AbsolutePaths(_localDirectory);
             _files = _fileMaker.Files;
             _folders = _fileMaker.Folders;
             SetupWorkspace();
@@ -135,6 +134,7 @@ namespace PhpMvcUploader.Core.Test.Ftp
             _client.DeleteFile(relativeFilePath);
 
             Assert.That(File.Exists(fileToDelete), Is.False);
+            Console.WriteLine(fileToDelete);
         }
 
         [Test]
@@ -168,8 +168,12 @@ namespace PhpMvcUploader.Core.Test.Ftp
 
             _client.DownloadAll(target);
 
-            targetFilesExpected.ForEach(f => Assert.That(File.Exists(f), f));
-            targetFoldersExpected.ForEach(f => Assert.That(Directory.Exists(f), f));
+            var missing = targetFilesExpected
+                .Where(f => !File.Exists(f))
+                .Union(targetFoldersExpected
+                    .Where(f => !Directory.Exists(f)))
+                .JoinX();
+            Assert.That(missing, Is.Empty);
         }
 
         private void AssertEquivalent(IEnumerable<string> actual, IEnumerable<string> expected)
